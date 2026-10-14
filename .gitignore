@@ -1,0 +1,7 @@
+myenv/
+.env
+__pycache__/
+*.py[cod]
+vector_store/
+.pytest_cache/
+data/uploads/
