@@ -8,6 +8,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
+from functools import lru_cache
 
 from app.config import (
     EMBEDDING_MODEL,
@@ -52,12 +53,15 @@ def extract_pdf(pdf_path):
     return documents
 
 
+
+@lru_cache(maxsize=1)
 def get_embeddings():
-    """Load the pretrained model used to create text embeddings."""
+    """Load and cache the embedding model."""
     return HuggingFaceEmbeddings(
         model_name=EMBEDDING_MODEL,
         encode_kwargs={"normalize_embeddings": True},
     )
+
 
 
 def build_vector_store(pdf_path):
@@ -94,15 +98,15 @@ def load_vector_store():
         allow_dangerous_deserialization=True,
     )
 
+
+@lru_cache(maxsize=1)
 def get_llm():
-    """Initialize the hosted LLM."""
+    """Create and cache the LLM client."""
     return ChatGroq(
         model=GROQ_MODEL,
         api_key=get_api_key(),
         temperature=0,
     )
-
-
 
 def answer_question(question, vector_store):
     """Retrieve relevant chunks and generate a grounded answer."""
